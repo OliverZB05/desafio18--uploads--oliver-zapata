@@ -1,5 +1,5 @@
 {
-  "name": "desafio15--mailing--oliver-zapata",
+  "name": "desafio17--testing--oliver-zapata",
   "version": "1.0.0",
   "description": "## Pasos para ejecutarlo",
   "main": "index.js",
@@ -31,7 +31,14 @@
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "socket.io": "^4.6.2",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0",
     "uuid": "^9.0.0",
     "winston": "^3.10.0"
+  },
+  "devDependencies": {
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
+    "supertest": "^6.3.3"
   }
 }

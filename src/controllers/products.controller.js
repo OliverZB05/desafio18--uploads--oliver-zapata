@@ -1,10 +1,10 @@
 import Factory from "../dao/factory.js";
-const Products = Factory.Products;
+const { Carts, Products } = await Factory();
+
+const products = new Products();
 
 import { productModel } from "../dao/mongo/models/products.model.js";
 import { generateProduct } from "../utils.js";
-
-const products = new Products();
 import ProductDto from '../dao/DTOs/config.dto.js';
 
 //======== { get_Products / productos con paginación } ========
@@ -50,8 +50,8 @@ const get_Products = async (req, res) => {
         const prevLink = hasPrevPage ? `${req.protocol}://${req.get('host')}${req.baseUrl}?page=${prevPage}&limit=${limit}` : null;
         const nextLink = hasNextPage ? `${req.protocol}://${req.get('host')}${req.baseUrl}?page=${nextPage}&limit=${limit}` : null;
 
-        res.send({
-            status: "success",
+        res.status(200).send({
+            status: 200,
             payload: productsResult,
             totalPages,
             prevPage,
@@ -62,6 +62,7 @@ const get_Products = async (req, res) => {
             prevLink,
             nextLink
         });
+        
     }
     catch (error){
         req.logger(req, 'error', `${error.message}`);
@@ -76,7 +77,7 @@ const getID_Products = async (req, res) => {
 
     try {
         const productsResult = await products.getID_Products(pid);
-        res.send({ status: "success", payload: productsResult });
+        res.status(200).send({ status: 200, payload: productsResult });
 
         //======== { TDD de getID_Products } ========
         // 1. Vefifica que devuelva el producto correcto según su id
@@ -155,8 +156,7 @@ const post_Products = async (req, res) => {
         delete response.category;
 
         console.log('response:', response); // Imprimir el objeto response
-
-        res.send({ status: 'success', payload: response });
+        res.status(200).send({ status: 200, payload: response });
     }
     } catch (error) {
     req.logger(req, 'error', `${error.message}`);
@@ -223,8 +223,7 @@ const put_Products = async (req, res) => {
         const response = { ...productDto };
         delete response.title;
         delete response.category;
-
-        res.send({ status: 'success', payload: response });
+        res.status(200).send({ status: 200, payload: response });
     }
     } catch (error) {
     req.logger(req, 'error', `${error.message}`);
@@ -253,13 +252,12 @@ const delete_Products = async (req, res) => {
     }
 
     const productsResult = await products.delete_Products(pid);
-    res.send({ status: 'success', payload: productsResult });
+    res.status(200).send({ status: 200, payload: productsResult });
     } catch (error) {
     req.logger(req, 'error', `${error.message}`);
     res.status(500).send({ status: 'error', error });
     }
 };
-
 //======== { delete_Products / borrar productos } ========
 
 //======== { updateProductStock / actualizar el stock del producto } ========
@@ -269,7 +267,7 @@ const updateProductStock = async (req, res) => {
     try {
         // Actualizar el stock del producto
         await products.updateProductStock(pid, newStock);
-        res.send({ status: "success" });
+        res.status(200).send({ status: 200 });
     } catch (error) {
         req.logger(req, 'error', `${error.message}`);
         res.status(500).send({ status: "error", error });
@@ -291,7 +289,7 @@ const mockingproducts = async (req, res) => {
             await products.post_Products(product);
             productsCreated++;
         }
-        res.send({ status: "success", message: "Se han creado 50 productos con éxito" });
+        res.status(200).send({ status: 200, message: "Se han creado 50 productos con éxito" });
     } catch (error) {
         req.logger(req, 'error', `${error.message}`);
         res.status(500).send({ status: "error", error });
@@ -303,7 +301,7 @@ const mockingproducts = async (req, res) => {
 const deleteMockingProducts = async (req, res) => {
     try {
         await products.deleteMockingProducts({ isMockingProduct: true });
-        res.send({ status: "success", message: "Se han eliminado los productos creados por el método mockingproducts" });
+        res.status(200).send({ status: 200, message: "Se han eliminado los productos creados por el método mockingproducts" });
     } catch (error) {
         req.logger(req, 'error', `${error.message}`);
         res.status(500).send({ status: "error", error });

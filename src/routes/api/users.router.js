@@ -1,6 +1,5 @@
 // users.router.js
 import { Router } from 'express';
-import passport from 'passport';
 import { userPremium } from '../../service/users.service.js';
 
 const router = Router();

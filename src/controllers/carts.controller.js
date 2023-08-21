@@ -1,12 +1,10 @@
 import passport from 'passport';
 import mongoose from 'mongoose'; 
-
 import Factory from "../dao/factory.js";
-const Carts = Factory.Carts;
-const Products = Factory.Products;
+const { Carts, Products } = await Factory();
 
-const cartInstance = new Carts();
-const productInstance = new Products();
+const CartsInstance = new Carts();
+const ProductsInstance = new Products();
 
 import TicketService from '../service/ticket.service.js';
 const ticketServiceInstance = new TicketService();
@@ -30,7 +28,7 @@ const getAll_Carts = async (req, res, next) => {
         try {
             // Obtenga solo los carritos asociados con el usuario actual
             const cartIds = req.user.carts.map(c => c.cart);
-            const carts = await cartInstance.getAll(cartIds);
+            const carts = await CartsInstance.getAll(cartIds);
 
             if (carts.some(cart => !Array.isArray(cart.products))) {
                 req.logger(req, 'error', "Algunos objetos del carrito no tienen una propiedad de products válida");
@@ -46,8 +44,7 @@ const getAll_Carts = async (req, res, next) => {
                 return cart;
             });
             
-
-            res.send({ status: 'success', payload: transformedCarts });
+            res.status(200).send({ status: 200, payload: transformedCarts });
         } catch (error) {
             req.logger(req, 'error', `${error.message}`);
             res.status(500).send({ error: error.message });
@@ -76,7 +73,7 @@ const getID_Carts = async (req, res, next) => {
             }
 
             // Consigue el carrito
-            const cart = await cartInstance.getId(cid);
+            const cart = await CartsInstance.getId(cid);
             if (!cart) {
                 req.logger(req, 'error', "Carrito no encontrado");
                 return res.status(404).send({ error: 'Carrito no encontrado' });
@@ -88,7 +85,7 @@ const getID_Carts = async (req, res, next) => {
                 quantity: p.quantity
             }));
 
-            res.send({ status: "success", payload: [cart] });
+            res.status(200).send({ status: 200, payload: [cart] });
         } catch (error) {
             req.logger(req, 'error', `${error.message}`);
             res.status(500).send({ status: "error", error });
@@ -110,13 +107,13 @@ const post_Carts = async (req, res, next) => {
         const { cart } = req.body;
         try {
             // Crea el carrito
-            const result = await cartInstance.create({ cart });
+            const result = await CartsInstance.create({ cart });
 
             // Asociar el carrito con el usuario actual
             req.user.carts.push({ cart: result._id });
             await req.user.save();
 
-            res.send({ status: "success", payload: result });
+            res.status(200).send({ status: 200, payload: result });
         } catch (error) {
             req.logger(req, 'error', `${error.message}`);
             res.status(500).send({ status: "error", error });
@@ -137,8 +134,8 @@ const postProds_Carts = async (req, res) => {
     }
 
     try {
-        const result = await cartInstance.addProductToCart(req, cartId, prodId, quantity);
-        res.send({ status: 'success', payload: result });
+        const result = await CartsInstance.addProductToCart(req, cartId, prodId, quantity);
+        res.status(200).send({ status: 200, payload: result });
     } catch (error) {
         req.logger(req, 'error', `${error.message}`);
         res.status(500).send({ error: error.message });
@@ -154,8 +151,8 @@ const put_Carts = async (req, res) => {
     const sort = req.query.sort;
 
     try {
-        const result = await cartInstance.updateCart(req, cartId, sort, req.query.page, req.query.limit);
-        res.send(result);
+        const result = await CartsInstance.updateCart(req, cartId, sort, req.query.page, req.query.limit);
+        res.status(200).send({ status: 200, payload: result });
     } catch (error) {
         req.logger(req, 'error', `${error.message}`);
         res.status(500).send({ error: error.message });
@@ -170,8 +167,8 @@ const putProds_Carts = async (req, res) => {
     const quantity = req.body.quantity || 1;
 
     try {
-        const result = await cartInstance.updateProductToCart(req, cartId, productId, quantity);
-        res.send({ status: 'success', payload: result });
+        const result = await CartsInstance.updateProductToCart(req, cartId, productId, quantity);
+        res.status(200).send({ status: 200, payload: result });
     } catch (error) {
         req.logger(req, 'error', `${error.message}`);
         res.status(500).send({ error: error.message });
@@ -187,8 +184,8 @@ const deleteProdsOne_Carts = async (req, res) => {
     const quantity = req.body.quantity || 1;
 
     try {
-    const remainingQuantity = await cartInstance.deleteProdsOneToCart(req, cartId, productId, quantity);
-    res.send({ status: 'success', payload: { id: productId, quantity: remainingQuantity } });
+    const remainingQuantity = await CartsInstance.deleteProdsOneToCart(req, cartId, productId, quantity);
+    res.status(200).send({ status: 200, payload: { id: productId, quantity: remainingQuantity } });
     }
     catch (error) {
         req.logger(req, 'error', `${error.message}`);
@@ -202,8 +199,8 @@ const delete_Carts = async (req, res) => {
     const { cid } = req.params; 
 
     try {
-        const result = await cartInstance.erase(cid);
-        res.send({ status: "success", payload: result });
+        const result = await CartsInstance.erase(cid);
+        res.status(200).send({ status: 200, payload: result });
     }
     catch (error){
         req.logger(req, 'error', `${error.message}`);
@@ -217,10 +214,10 @@ const deleteProds_Carts = async (req, res) => {
     const cartId = req.params.cid;
 
     try {
-    const result = await cartInstance.deleteProdsToCart(req, cartId);
+    const result = await CartsInstance.deleteProdsToCart(req, cartId);
 
     // Enviar respuesta al cliente
-    res.send({ status: 'success', payload: { products: [] } });
+    res.status(200).send({ status: 200, payload: { products: [] } });
     } catch (error) {
         req.logger(req, 'error', `${error.message}`);
         res.status(500).send({ error: error.message });
@@ -241,7 +238,7 @@ const purchase_Cart = async (req, res, next) => {
                 req.logger(req, 'error', "Carrito no encontrado");
                 return res.status(404).send({ error: 'Carrito no encontrado' }); 
             }
-            const cart = await cartInstance.getId(cid);
+            const cart = await CartsInstance.getId(cid);
             if (!cart) {
                 req.logger(req, 'error', "Carrito no encontrado");
                 return res.status(404).send({ error: 'Carrito no encontrado' }); 
@@ -254,12 +251,12 @@ const purchase_Cart = async (req, res, next) => {
             if (Array.isArray(cart.products)) {
                 for (let product of cart.products) {
                     // Obtener la información del producto
-                    const productInfo = await productInstance.getID_Products(product.product);
+                    const productInfo = await ProductsInstance.getID_Products(product.product);
                 
                     // Verificar si hay suficiente stock para el producto
                     if (product.quantity <= productInfo.stock) {
                         // Hay suficiente stock, restar la cantidad del stock del producto
-                        await productInstance.updateProductStock(product.id, productInfo.stock - product.quantity);
+                        await ProductsInstance.updateProductStock(product.id, productInfo.stock - product.quantity);
                 
                         // Agregar el producto a productsToPurchase
                         productsToPurchase.push({
@@ -291,8 +288,8 @@ const purchase_Cart = async (req, res, next) => {
             });
 
             // Devolver una respuesta con el ticket y los productos que no pudieron procesarse
-            res.send({
-                status: 'success',
+            res.status(200).send({
+                status: 200,
                 payload: {
                     ticket,
                     productsOutOfStock
@@ -307,10 +304,5 @@ const purchase_Cart = async (req, res, next) => {
         }
     })(req, res, next)
 }
-
-
-
-
-
 
 export { getAll_Carts, getID_Carts, post_Carts, postProds_Carts, put_Carts, putProds_Carts, deleteProdsOne_Carts, delete_Carts, deleteProds_Carts, purchase_Cart };

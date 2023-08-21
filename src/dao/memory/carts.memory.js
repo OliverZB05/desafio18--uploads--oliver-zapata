@@ -191,23 +191,3 @@ export default class Carts {
         this.data[index].products=[];
     }
 }
-
-//#############----{ CONCEPTOS }----#############
-
-
-// ➤ ¿Que son las funciones equals y some?
-
-/* equals es un método de los objetos ObjectId de Mongoose que se utiliza para comparar 
-dos objetos ObjectId y determinar si representan el mismo valor. Este método toma como
-argumento otro objeto ObjectId y devuelve true si ambos objetos representan el mismo
-valor, o false en caso contrario.
-
-some es un método de los arrays de JavaScript que se utiliza para determinar si al menos
-un elemento del array cumple con una condición especificada. Este método toma como argumento
-una función de callback que se ejecuta para cada elemento del array. Si la función de callback
-devuelve true para al menos un elemento del array, el método some devuelve true. De lo contrario,
-devuelve false.
-
-En resumen, equals es un método de los objetos ObjectId de Mongoose que se utiliza para comparar
-dos objetos ObjectId, mientras que some es un método de los arrays de JavaScript que se utiliza 
-para determinar si al menos un elemento del array cumple con una condición especificada. */

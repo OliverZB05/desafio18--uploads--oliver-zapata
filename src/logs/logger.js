@@ -3,4 +3,3 @@ function logMessage(logger, req, level, message) {
 }
 
 export { logMessage };
-

@@ -36,27 +36,3 @@ export default class CartRepository {
         await cart.save();
     }
 }
-
-
-
-//#############----{ CONCEPTOS }----#############
-
-
-// ➤ Explicación de exec()
-
-/* exec es un método de Mongoose que se utiliza para ejecutar una consulta
-y devolver un objeto Promise. Este método se utiliza después de construir
-una consulta utilizando los métodos de consulta de Mongoose, como find, 
-findOne, findById, entre otros.
-
-En tu código, estás utilizando el método exec en la función findByIdPage
-para ejecutar una consulta que busca un carrito de compras en la base de 
-datos utilizando su ID. Primero, estás utilizando el método findById del 
-modelo de carrito para construir una consulta que busca un carrito de compras
-con el ID especificado. Luego, estás utilizando el método exec para ejecutar la
-consulta y devolver un objeto Promise que se resuelve con el resultado de la consulta.
-
-En resumen, exec es un método de Mongoose que se utiliza para ejecutar una consulta
-y devolver un objeto Promise. En tu código, estás utilizando este método en la función
-findByIdPage para ejecutar una consulta que busca un carrito de compras en la base de 
-datos utilizando su ID. */

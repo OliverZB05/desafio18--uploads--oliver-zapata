@@ -1,4 +1,4 @@
-# desafio14--logs--oliver-zapata
+# desafio17--testing--oliver-zapata
 
 ## Pasos para ejecutarlo
 
@@ -7,13 +7,32 @@
 - Colocar el comando: node app.js estándo en la caperta src, si no se está en el carpeta src entonces colocar: node src/app.js
 - Abrir en el navegador las rutas http://localhost:8080 para abrir la página de registro
 
-## Guía de rutas
+## Pasos para ejecutar los test (test de los métodos de productos, carritos y sesiones)
+- Seleccionar el archivo app.js y abrir en terminal integrada (Es decir abrir la consola)
+- Si se quiere ejecutar el test de productos se coloca el comando:<br>
+npx mocha test/integration/products.integration.test.js
+- Si se quiere ejecutar el test de carritos se coloca el comando:<br>
+npx mocha test/integration/carts.integration.test.js
+- Si se quiere ejecutar el test de sesiones se coloca el comando:<br>
+npx mocha test/integration/sessions.integration.test.js
+
+## Guía de rutas (del lado del cliente)
 
 ### http://localhost:8080 o http://localhost:8080/login
 En esta ruta se iniciará sesión en la página
 
 ### http://localhost:8080/register
 En esta ruta se registrarán los datos del usuario
+
+## http://localhost:8080/reset
+En esta ruta se cambia la contraseña
+
+### http://localhost:8080/ResetPassword
+En esta ruta se cambia la contraseña mediante el correo, se pasa el correo en el formulario y luego en ese correo se resivirá un correo de autenticación con un link, pueden pasar 2 casos: 
+
+- si el link expiró te enviará a una página para ingresar otra vez el correo y una vez eso debes ingresar al link otra vez para resetear la contraseña
+
+- si el link no expiró te pasará a la página para resetear la contraseña directamente
 
 ### http://localhost:8080/products
 En esta ruta se verán todos los productos con paginación con la opción de poder pasar algún producto al carrito, también se pueden ejecutar métodos post y put mediante alguna herramienta como postman y en el navegador se verán los cambios automáticamente mediante la implementación de sockets al método get que muestra la vista de esta ruta
@@ -23,90 +42,41 @@ En esta ruta se pueden ver los productos del carrito en tiempo real al establece
 dentro del carrito con el id: 646b7bbcb035a38e23da5ad8
 
 
-
 ## Guía de métodos
-En el archivo principal app.js usa 3 routers:
+En el archivo principal app.js usan 7 routers:
 
-app.use("/", viewsProductRouter);            (views.products.js)
+-  app.use("/", viewsProductRouter);    (views.products.js)
 
-### Solo para admins
-app.use('/api/products', passport.authenticate('jwt', { session: false }), checkRole('admin'), productsRouter);    (products.router.js) 
+- app.use('/api/products', passport.authenticate('jwt', { session: false }), checkRole(['admin', 'premium']), productsRouter);    (products.router.js) 
 
-app.use("/api/carts", cartsRouter);          (carts.router.js)
-app.use("/api/sessions", sessionsRouter);    (session.router.js)
-app.use("/", viewsLoginRouter);              (views.login.js)
+- app.use('/api/carts', cartsRouter);   (carts.router.js)
 
-### Métodos del router products.router.js
-### (Los métodos este router solo se pueden ejecutar mediante postman)
+- app.use("/api/sessions", sessionsRouter);   (session.router.js)
 
-- Método GET<br>
-http://localhost:8080/api/products<br>
-Ahora con la implementación de la paginación se puede colocar al final de la ruta un límite y una pagina específica que se quiera ver, como por ejemplo de esta forma: http://localhost:8080/api/products?page=2&limit=3, también se puede especificar un orden añadiendo sort (De forma descendente: http://localhost:8080/api/products?sort=desc) (De forma ascendente: http://localhost:8080/api/products?sort=asc)
+- app.use("/api/users", usersRouter);   (users.router.js)
 
-- Método GET por id<br>
-http://localhost:8080/api/products/:pid <br>
-Una vez creado un producto se coloca su id como valor en el parámetro :pid
+- app.use("/", viewsRouter);    (views.router.js)
 
-- Método POST<br>
-http://localhost:8080/api/products <br>
-
-- Método PUT<br>
-http://localhost:8080/api/products/:pid <br>
-Se actualizará el producto con el id específicado
-
-- Método DELETE<br>
-http://localhost:8080/api/products/:pid <br>
-Se borrará el producto con el id específicado
+- app.use("/", logsRouter);   (loggers.login.js)
 
 
-### Métodos del router carts.router.js
-### (Los métodos este router solo se pueden ejecutar mediante postman)
-- Método GETAll<br>
-http://localhost:8080/api/carts/getAll<br>
-Mediante este método el usuario puede darse cuenta de todos los carritos que se han creado
+### Métodos de carts.router.js y products.router.js (métodos ejecutables en postman)
+La explicación de los métodos de carritos y productos se puede encontrar en la ruta:<br>
+http://localhost:8080/api/docs/
+ 
+### Métodos de loggers.login.js (métodos ejecutables en postman)
+- Método GET (para probar los logs)<br>
+http://localhost:8080/loggerTest<br>
 
-- Método GET por ID<br>
-http://localhost:8080/api/carts/:pid<br>
-Una vez creado un carrito se coloca su id como valor en el parámetro :pid
+### Métodos de session.router.js (métodos ejecutables en postman)
+- Método GET (para ver los detalles del usuario)<br>
+http://localhost:8080/api/sessions/current
 
-- Método POST<br>
-http://localhost:8080/api/carts
+### Métodos de users.router.js (métodos ejecutables en postman)
+- Método GET (para convertir al usuario en premium o en usuario)<br>
+http://localhost:8080/api/users/premium/:uid (donde :uid es el id del usuario y ese id se puede ver en el current)
 
-- Método POST (para pasar un producto al carrito)<br>
-http://localhost:8080/api/carts/:cid/product/:pid<br>
-Aquí se usa el id del carrito en el parámetro :cid para especificar en que carrito quiero poner el producto, y se usa el id del producto en el parámetro :pid para especificar que producto a poner en el carrito
-
-- Método PUT (para añadir paginación)<br>
-http://localhost:8080/api/carts/:cid<br>
-En este método se puede agregar también un sort, limit o page para hacer especificaciones en la página
-
-- Método PUT (para actualizar un producto en el array de productos)<br>
-http://localhost:8080/api/carts/:cid/product/:pid<br>
-En este método se puede alterar la cantidad de un producto especifico de un carrito especifico según su id pasándole un objeto se esta manera por ejemplo: <br>
-{             
-  "quantity": 8<br>
-}<br>
-
-- Método DELETE (para quitar un producto del carrito)<br>
-http://localhost:8080/api/carts/:cid/product/:pid<br>
-Al igual que el método anterior se usa el id del carrito en el parámetro :cid para especificar de que carrito eliminar el producto, y se usa el id del producto en el parámetro :pid para especificar que producto eliminar del carrito.<br>
-Cuando se elimina un producto con cierta cantidad (por ejemplo 8) esta va disminuyendo, pero si la cantidad es 1 y se ejecuta este método lo borrará al no quedar ninguna cantidad de ese producto
-
-- Método DELETE (para eliminar carrito)<br>
-http://localhost:8080/api/carts/deleteCart/:cid<br>
-Se borrará el carrito con el id específicado
-
-
-- Método DELETE (para eliminar todos los productos de un carrito)<br>
-http://localhost:8080/api/carts/:cid<br>
-Este método eliminará todos los productos de un carrito según su id
-
-
-### Métodos del router views.products.js<br>
-### (Los métodos este router solo se pueden en la web usando el navegador del lado del cliente)<br>
-Este router usa las rutas http://localhost:8080/products y http://localhost:8080/carts/646b7bbcb035a38e23da5ad8 específicadas en la guía de rutas
-
-### Métodos de passport.config.js<br>
+### Métodos de passport.config.js (archivo ubicado en la carpeta de config dentro de src)<br>
 
 - Método register de passport
 Contiene la lógica del método POST de registro de sessions.router.js
@@ -139,23 +109,3 @@ Para cambiar la contraseña de un usuario especificado
 Se añadieron nuevos métodos para poder ver los cambios que se hacen al registrarse con github, estos métodos son:<br>
 http://localhost:8080/api/sessions/github<br>
 http://localhost:8080/api/sessions/github-callback
-
-### Métodos del router views.router.js<br>
-
-En este router se renderizan las vistas de registro y de login mostradas en las rutas anotadas del router session.router.js, solo que en sessions.router.js se encuentra la lógica para que el funcionamiento de esas vistas funcione
-
-### Otras implementaciones
-
-- Ahora se maneja jwt en conjunto con passport<br>
-- Se añadió una nueva ruta http://localhost:8080/api/sessions/current donde se ve el usuario
-- Ahora los métodos get del carrito de compras está asociado a los usuarios por lo que solo se verán los carritos que haya creado el usuario registrado
-- Se agregaron variables de entorno
-- Se aplicaron patrones de diseño y una nueva arquitectura de capas (eso explicado en el documento de texto "Arquitectura de mi proyecto")
-- Se agrego un modelo de tickets y lógica para esa orden de compra
-- Se añadió el patrón de diseño TDD 
-- Se añadió faker con y dos nuevos métodos, un método "mockingproducts" para crear 50 productos usando faker, y otro método "deleteMockingProducts" para eliminar los 50 productos creados por faker
-
-
-### Nuevas implementaciones
-
-- Se añadieron logs 

@@ -18,8 +18,6 @@ export default class Products {
         return product.toObject();
     }
     
-    
-
     post_Products = async (prod) => {
         const result = await this.productRepository.create(prod);
         return result;

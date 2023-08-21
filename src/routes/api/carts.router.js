@@ -5,12 +5,12 @@ import { getAll_Carts, getID_Carts, post_Carts, postProds_Carts, put_Carts, putP
 const router = Router();
 
 //======== { Métodos GET } ========
-router.get('/getAll', getAll_Carts);
-router.get('/:cid', getID_Carts);
+router.get('/getAll', getAll_Carts); 
+router.get('/:cid', getID_Carts); 
 //======== { Métodos GET } ========
 
 //======== { Métodos POST } ========
-router.post('/', post_Carts);
+router.post('/', post_Carts); 
 
 const isLoggedIn = (req, res, next) => {
     if (req.isAuthenticated()) {
@@ -26,19 +26,19 @@ const isUser = (req, res, next) => {
     res.status(403).json({ message: 'Error: Debes tener el rol user para pasar productos al carrito' });
 }
 
-router.post('/:cid/product/:pid', passport.authenticate('jwt', { session: false }), isLoggedIn, isUser, postProds_Carts);
-router.post('/:cid/purchase', purchase_Cart);
+router.post('/:cid/product/:pid', passport.authenticate('jwt', { session: false }), isLoggedIn, isUser, postProds_Carts); 
+router.post('/:cid/purchase', purchase_Cart); 
 //======== { Métodos POST } ========
 
 //======== { Métodos PUT } ========
 router.put('/:cid', put_Carts);
-router.put('/:cid/product/:pid', putProds_Carts);
+router.put('/:cid/product/:pid', putProds_Carts); 
 //======== { Métodos PUT } ========
 
 //======== { Métodos DELETE } ========
-router.delete('/:cid/product/:pid', deleteProdsOne_Carts);
-router.delete('/deleteCart/:cid', delete_Carts);
-router.delete('/:cid', deleteProds_Carts);
+router.delete('/:cid/product/:pid', deleteProdsOne_Carts); 
+router.delete('/deleteCart/:cid', delete_Carts);   
+router.delete('/:cid', deleteProds_Carts);  
 //======== { Métodos DELETE } ========
 
 export default router;

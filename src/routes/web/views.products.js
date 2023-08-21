@@ -86,35 +86,3 @@ router.get("/carts/:cid", async (req, res) => {
 export default router;
 export {getProducts};
 export {getCart};
-
-
-
-//#############----{ CONCEPTOS }----#############
-
-
-// ➤ Explicación de la paginación
-
-/* En el archivo views.products.js, estás implementando la paginación para las rutas /products
-y /carts/:cid utilizando las funciones getProducts y getCart, respectivamente.
-
-La función getProducts toma como argumentos page y limit, que representan la página actual y el
-número de productos por página, respectivamente. Dentro de esta función, estás utilizando el 
-método skip y el método limit del modelo de producto para obtener solo los productos correspondientes
-a la página actual. También estás calculando el número total de páginas utilizando el método 
-countDocuments del modelo de producto y el valor de limit. Finalmente, estás devolviendo un 
-objeto con la información de los productos, la página actual, el número total de páginas y las
-páginas anterior y siguiente.
-
-La función getCart toma como argumentos cartId, page y limit, que representan el ID del carrito de
-compras, la página actual y el número de productos por página, respectivamente. Dentro de esta 
-función, estás buscando el carrito de compras en la base de datos utilizando el método findById
-del modelo de carrito y el valor de cartId. Luego, estás extrayendo los productos del carrito y
-utilizando los métodos slice y length para obtener solo los productos correspondientes a la
-página actual y calcular el número total de páginas. Finalmente, estás devolviendo un objeto
-con la información de los productos, la página actual, el número total de páginas y las páginas
-anterior y siguiente.
-
-En resumen, en el archivo views.products.js, estás implementando la paginación para las rutas 
-/products y /carts/:cid utilizando las funciones getProducts y getCart, respectivamente. Estas 
-funciones toman como argumentos la página actual y el número de productos por página y devuelven
-un objeto con la información de los productos correspondientes a la página actual. */

@@ -11,6 +11,8 @@ import bodyParser from 'body-parser';
 import nodemailer from 'nodemailer';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUiExpress from 'swagger-ui-express';
 //========={ Dependencias }=========
 
 // Importar el archivo config.js
@@ -46,18 +48,6 @@ import { logMessage } from "./logs/logger.js";
 //========={ Logs }=========
 
 import User from "./dao/dbManagers/models/users.model.js";
-
-
-//==============================
-//Función para especificar donde está un console.log
-
-const originalLog = console.log;
-console.log = function(...args) {
-    const stack = new Error().stack;
-    const caller = stack.split('\n')[2].trim();
-    originalLog.apply(console, [...args, '\n', caller]);
-}
-//==============================
 
 const app = express();
 
@@ -134,31 +124,44 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-
 //========={ Inicialización de passport }=========
+
+
+const swaggerOptions = {
+    definition: {
+        openapi: '3.0.1',
+        info: {
+            title: 'Documentación del proyecto',
+            description: 'API pensada para resolver el proceso de documentación'
+        }
+    },
+    apis: [`${__dirname}/docs/**/*.yaml`]
+};
+
+const specs = swaggerJsdoc(swaggerOptions);
+app.use('/api/docs', swaggerUiExpress.serve, swaggerUiExpress.setup(specs));
+
 function checkRole(roles) {
     return (req, res, next) => {
-    if (req.isAuthenticated()) {
-        if (roles.includes(req.user.role)) {
-        return next();
+        if (req.isAuthenticated()) {
+            if (roles.includes(req.user.role)) {
+                return next();
+            } else {
+                req.logger(
+                    req,
+                    'error',
+                    'Solo los administradores y los usuarios premium pueden usar los métodos de productos'
+                );
+                res.status(401).json({
+                    message:
+                        'Solo los administradores y los usuarios premium pueden usar los métodos de productos',
+                });
+            }
         } else {
-        req.logger(
-            req,
-            'error',
-            'Solo los administradores y los usuarios premium pueden usar los métodos de productos'
-        );
-        res.status(401).json({
-            message:
-            'Solo los administradores y los usuarios premium pueden usar los métodos de productos',
-        });
+            res.status(401).json({ message: 'Unauthorized' });
         }
-    } else {
-        res.status(401).json({ message: 'Unauthorized' });
-    }
     };
 }
-
-
 
 //========={ Usando de routers }=========
 app.use("/", viewsProductRouter);
@@ -168,14 +171,10 @@ app.use("/api/sessions", sessionsRouter);
 app.use("/api/users", usersRouter);
 app.use("/", viewsRouter);
 app.use("/", logsRouter);
-
 //============ Nodemailer ============
 app.post('/send-email', async (req, res) => {
     // Obtener la información del correo electrónico desde la solicitud HTTP
     const { email } = req.body;
-
-    // Imprimir los valores del correo electrónico y la nueva contraseña
-    console.log('Email:', email);
 
     // Verificar si el correo electrónico existe en la base de datos
     const user = await User.findOne({ email: email });
@@ -183,7 +182,13 @@ app.post('/send-email', async (req, res) => {
         // El correo electrónico no existe en la base de datos
         // Enviar una respuesta al cliente indicando que el correo electrónico no existe
         res.status(400).send('El correo electrónico no existe');
-        console.log('El correo electrónico no existe');
+
+        if (process.env.NODE_ENV === 'development') {
+            developmentLogger.log('error', 'El correo electrónico no existe');
+        } else {
+            productionLogger.log('error', 'El correo electrónico no existe');
+        }
+
         return;
     }
 
@@ -211,10 +216,13 @@ app.post('/send-email', async (req, res) => {
 
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-            console.log(error);
             res.sendStatus(500);
         } else {
-            console.log('Email enviado: ' + info.response);
+            if (process.env.NODE_ENV === 'development') {
+                developmentLogger.log('info', `Email enviado: ${info.response}`);
+            } else {
+                productionLogger.log('info', `Email enviado: ${info.response}`);
+            }
             res.sendStatus(200);
         }
     });
@@ -248,7 +256,7 @@ app.get('/reset/:token/:timestamp', async (req, res) => {
             // El correo electrónico no existe en la base de datos
             // Enviar una respuesta al cliente indicando que el correo electrónico no existe
             res.status(400).send('El correo electrónico no existe');
-            console.log('El correo electrónico no existe')
+            req.logger(req, 'error', 'El correo electrónico no existe');
             return;
         }
 
@@ -263,16 +271,13 @@ app.post('/new-reset', async (req, res) => {
       // Obtener la información del correo electrónico desde la solicitud HTTP
     const { email } = req.body;
 
-    // Imprimir los valores del correo electrónico y la nueva contraseña
-    console.log('Email:', email);
-
     // Verificar si el correo electrónico existe en la base de datos
     const user = await User.findOne({ email: email });
     if (!user) {
         // El correo electrónico no existe en la base de datos
         // Enviar una respuesta al cliente indicando que el correo electrónico no existe
         res.status(400).send('El correo electrónico no existe');
-        console.log('El correo electrónico no existe');
+        req.logger(req, 'error', 'El correo electrónico no existe');
         return;
     }
 
@@ -300,10 +305,15 @@ app.post('/new-reset', async (req, res) => {
 
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-            console.log(error);
             res.sendStatus(500);
         } else {
-            console.log('Email enviado: ' + info.response);
+
+            if (process.env.NODE_ENV === 'development') {
+                developmentLogger.log('info', 'Email enviado: ' + info.response);
+            } else {
+                productionLogger.log('info', 'Email enviado: ' + info.response);
+            }
+
             res.sendStatus(200);
         }
     });
@@ -383,98 +393,78 @@ app.set('socketio', io);
 io.sockets.setMaxListeners(20);
 //========={ Usando socket.io }========
 
-//#############----{ CONCEPTOS }----#############
-
-
-// ➤ Funcionamiento de checkRole
-
-/* checkRole es una función que se utiliza para verificar si el usuario
-tiene un rol específico. Esta función toma como argumento un role y
-devuelve una función middleware que se puede utilizar en las rutas 
-de Express.
-
-La función middleware devuelta por checkRole toma como argumentos req,
-res y next. Dentro de esta función, se verifica si el usuario ha
-iniciado sesión utilizando req.isAuthenticated(). Si el usuario ha
-iniciado sesión, se verifica si su rol coincide con el role especificado.
-Si el rol del usuario coincide con el role especificado, se llama a la 
-función next() para permitir que la solicitud continúe. Si el rol del usuario
-no coincide con el role especificado, se envía una respuesta con un código
-de estado 401 y un mensaje de error indicando que el usuario no está autorizado.
-
-En resumen, checkRole es una función que se utiliza para verificar si el usuario
-tiene un rol específico. Esta función devuelve una función middleware que se 
-puede utilizar en las rutas de Express para restringir el acceso a usuarios con
-un rol específico. */
 
 
 
 
-/*  ➤ Explicación de la línea: app.use('/api/products', passport.authenticate('jwt', 
-{ session: false }), checkRole('admin'), productsRouter); */
-
-/* La línea app.use('/api/products', passport.authenticate('jwt', { session: false }), 
-checkRole('admin'), productsRouter); se utiliza para montar el router productsRouter 
-en la ruta /api/products y restringir el acceso a esta ruta solo a usuarios autenticados
-con un rol de admin.
-
-La función passport.authenticate('jwt', { session: false }) se utiliza como middleware para
-autenticar al usuario utilizando un token JWT. Esta función verifica si el token JWT proporcionado
-en la solicitud es válido y, si es así, recupera la información del usuario y la almacena 
-en req.user. Si el token JWT no es válido o no se proporciona, la función envía una respuesta
-con un código de estado 401 y un mensaje de error indicando que el usuario no está autenticado.
-
-La función checkRole('admin') se utiliza como middleware para verificar si el usuario tiene un rol 
-de admin. Esta función verifica si el usuario ha iniciado sesión y si su rol coincide con el rol 
-especificado (admin). Si el usuario no ha iniciado sesión o si su rol no coincide con el rol 
-especificado, la función envía una respuesta con un código de estado 401 y un mensaje de error 
-indicando que el usuario no está autorizado.
-
-En resumen, la línea app.use('/api/products', passport.authenticate('jwt', { session: false }), 
-checkRole('admin'), productsRouter); se utiliza para montar el router productsRouter en la ruta
-/api/products y restringir el acceso a esta ruta solo a usuarios autenticados con un rol de admin.
-Las funciones passport.authenticate('jwt', { session: false }) y checkRole('admin') se utilizan 
-como middleware para autenticar al usuario y verificar su rol antes de permitirle acceder a la 
-ruta /api/products. */
 
 
 
 
-// ➤ Explicación de la configuración de socket.io
 
-/* En tu código, estás utilizando Socket.IO para habilitar la comunicación en tiempo real 
-entre el servidor y los clientes.
 
-Primero, estás creando un servidor HTTP utilizando app.listen y pasándolo como argumento
-al constructor de Server para crear una instancia de Socket.IO. Esto permite que Socket.IO
-escuche conexiones en el mismo puerto que el servidor HTTP.
 
-Luego, estás utilizando el método on de la instancia de Socket.IO para escuchar eventos. En tu caso,
-estás escuchando dos eventos: connection y cartUpdated.
 
-El evento connection se dispara cuando un nuevo cliente se conecta al servidor. 
 
-Dentro del manejador de este evento, estás utilizando el método on del objeto socket 
-para escuchar eventos específicos del cliente. En tu caso, estás escuchando dos eventos: 
-message y auth.
 
-El evento message se dispara cuando el cliente envía un mensaje al servidor. 
-Dentro del manejador de este evento, estás almacenando el mensaje en un array
-y utilizando el método emit de la instancia de Socket.IO para enviar el array 
-de mensajes a todos los clientes conectados.
 
-El evento auth se dispara cuando el cliente se autentica. Dentro del manejador
-de este evento, estás utilizando el método emit del objeto socket para enviar 
-el array de mensajes solo al cliente que se autenticó. También estás utilizando 
-el método broadcast.emit del objeto socket para enviar un mensaje a todos los demás
-clientes indicando que un nuevo usuario se ha unido al chat.
 
-El evento cartUpdated se dispara cuando el carrito de compras es actualizado. 
-Dentro del manejador de este evento, estás recuperando la información de los 
-productos y del carrito de compras y utilizando el método emit de la instancia 
-de Socket.IO para enviar esta información a todos los clientes conectados.
 
-En resumen, estás utilizando Socket.IO para habilitar la comunicación en tiempo
-real entre el servidor y los clientes. Estás escuchando eventos específicos y 
-utilizando los métodos on y emit para recibir y enviar información entre el 
-servidor y los clientes. */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

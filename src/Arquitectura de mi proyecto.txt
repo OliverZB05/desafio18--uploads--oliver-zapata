@@ -39,6 +39,10 @@ en sus respectivos archivos de lógica para la persistencia elegida.
 
 ➤ dao: Muestra los DTO, los archivos de lógica de persistencia, el archivo de la lógica de factory y más.
 
+➤ docs: Donde se encuentra la documentación de los métodos del router de productos y del de carritos
+
+➤ logs: Donde se muestran los archivos que muestran los logs del código
+
 ➤ rendered: Tiene las vistas y la lógica de las vistas del lado del cliente.
 
 ➤ repositories: Se encarga de los métodos principales los cuales suelen usarse en la capa de servicios o en 
@@ -51,20 +55,22 @@ backend y los de la carpeta "web" que tienen lógica del lado del frontend y sue
 ➤ service: Esta carpeta se encarga de la capa de servicios, en este caso solo contiene un archivo llamado "ticket.service.js"
 el cual tiene la capa de servicios del modelo de tickets (orden de compra)
 
+➤ test: Allí se ejecutan los test de los routers de productos y carritos y de las sesiones
+
 
 
 ========={ Archivos principales del proyecto }=========
 
+➤ .env: Donde se definen los argumentos de las variables de entorno
+
 ➤ app.js: El archivo principal y más importante del proyecto
 
-➤ utils.js: Donde se obtiene el dirname, que es fundamental para obtener la ruta completa de algún archivo
+➤ errors.log: donde se vizualizan los errores y los mensajes de carga del proyecto
 
-➤ .env: Donde se definen los argumentos de las variables de entorno
+➤ utils.js: Donde se obtiene el dirname, que es fundamental para obtener la ruta completa de algún archivo
 
 ➤ .gitignore: Donde se definen las cosas que se ignorarán al subirse el proyecto a github
 
 ➤ Los archivos package.json y package-lock.json: Donde se ven las dependencias que se tienen instalas en el proyecto y más
 
 ➤ README.md: La descripción principal de mi proyecto
-
-➤ products.json: Ese archivo solo cumple la función para que las demás personas que usen este proyecto tengan los objetos que tengo en mi base de datos

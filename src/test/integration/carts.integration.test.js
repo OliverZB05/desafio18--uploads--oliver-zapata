@@ -23,7 +23,8 @@ describe('Testing de carritos', () => {
                 category: "Productos del hogar"
             };
             const response = await requester.post('/api/products').send(productData);
-            console.log('Respuesta recibida:', response);
+            console.log(response.statusCode);
+            console.log(response.body.payload._id);
 
             expect(response.statusCode).to.be.eql(200);
             expect(response.body.payload).to.have.property('_id');
@@ -31,6 +32,8 @@ describe('Testing de carritos', () => {
         } catch (error) {}
     });
 
+
+    
     // Segundo caso de prueba: crear un carrito
     it('POST de /api/carts debe crear un carrito correctamente', async () => {
         console.log('Enviando solicitud POST a /api/carts');

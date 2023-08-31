@@ -79,7 +79,7 @@ passport.use('register', new LocalStrategy({
     usernameField: 'email',
     passReqToCallback: true
 }, async (req, username, password, done) => {
-    const { first_name, last_name, email, age } = req.body;
+    const { first_name, last_name, email, age, documents, last_connection } = req.body;
     try {
         // Verificando si el correo ya está registrado
         const user = await userModel.findOne({ email: username });

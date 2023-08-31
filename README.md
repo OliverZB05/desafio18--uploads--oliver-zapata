@@ -109,3 +109,7 @@ Para cambiar la contraseña de un usuario especificado
 Se añadieron nuevos métodos para poder ver los cambios que se hacen al registrarse con github, estos métodos son:<br>
 http://localhost:8080/api/sessions/github<br>
 http://localhost:8080/api/sessions/github-callback
+
+
+### Ruta para ver documentación<br>
+- http://localhost:8080/api/docs/

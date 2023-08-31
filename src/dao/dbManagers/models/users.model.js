@@ -34,6 +34,14 @@ const userSchema = new mongoose.Schema({
             }
         ],
         ref: 'carts'
+    },
+    documents: [{
+        name: String,
+        reference: String
+    }],
+    last_connection: {
+        type: Date,
+        default: new Date()
     }
 });
 //========={ Esquema de users }=========
